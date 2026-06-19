@@ -198,8 +198,12 @@
             <Setter Property="MinHeight" Value="28"/>
             <Setter Property="Padding" Value="9,2"/>
             <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="Foreground" Value="{StaticResource Text}"/>
+        </Style>
+        <Style Selector="ComboBox.kind /template/ Border#Background">
             <Setter Property="Background" Value="{StaticResource PanelAlt}"/>
             <Setter Property="BorderBrush" Value="{StaticResource Hairline}"/>
+            <Setter Property="BorderThickness" Value="1"/>
         </Style>
 
         <!-- Keycap hint -->
