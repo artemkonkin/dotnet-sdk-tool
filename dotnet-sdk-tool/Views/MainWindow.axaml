@@ -10,7 +10,7 @@
         Width="1400" Height="900" MinWidth="880" MinHeight="560"
         Background="{StaticResource Bg}"
         FontFamily="{StaticResource MonoFont}"
-        Icon="/Assets/avalonia-logo.ico"
+        Icon="/Assets/dotnet-logo.ico"
         Title=".NET SDK Installer">
 
     <Design.DataContext>
