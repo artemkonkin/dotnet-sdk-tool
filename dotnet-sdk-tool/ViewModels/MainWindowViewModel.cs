@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using dotnet_sdk_tool_template.Models;
 using dotnet_sdk_tool_template.Services;
 
 namespace dotnet_sdk_tool_template.ViewModels;
@@ -15,6 +16,7 @@ public partial class MainWindowViewModel : ViewModelBase
 {
     private readonly ReleaseService _releaseService;
     private readonly DotnetInstaller _installer;
+    private readonly LegacyFrameworkInstaller _legacyInstaller;
     private readonly Progress<string> _installProgress;
 
     private List<DotnetChannelViewModel> _allChannels = new();
@@ -33,8 +35,17 @@ public partial class MainWindowViewModel : ViewModelBase
 
     public ObservableCollection<DotnetChannelViewModel> Channels { get; } = new();
 
+    /// <summary>Cumulative .NET Framework 4.x line — only one of these is installable at a time.</summary>
+    public ObservableCollection<LegacyFrameworkViewModel> Net4Versions { get; } = new();
+
+    /// <summary>Stand-alone legacy versions (3.5 SP1, 2.0 SP2, 1.1 SP1).</summary>
+    public ObservableCollection<LegacyFrameworkViewModel> OtherLegacyVersions { get; } = new();
+
     public string PlatformDescription => DotnetInstaller.PlatformDescription;
     public string InstallDir => DotnetInstaller.InstallDir;
+
+    /// <summary>Legacy .NET Framework is Windows-only — drives visibility of that section.</summary>
+    public bool IsWindows => LegacyFrameworkInstaller.IsSupported;
 
     public MainWindowViewModel()
         : this(new HttpClient())
@@ -45,9 +56,30 @@ public partial class MainWindowViewModel : ViewModelBase
     {
         _releaseService = new ReleaseService(httpClient);
         _installer = new DotnetInstaller(httpClient);
+        _legacyInstaller = new LegacyFrameworkInstaller(httpClient);
         _installProgress = new Progress<string>(AppendLog);
 
+        LoadLegacyFrameworks();
         _ = LoadAsync();
+    }
+
+    private void LoadLegacyFrameworks()
+    {
+        if (!IsWindows)
+            return;
+
+        foreach (var fw in LegacyFrameworkInstaller.Load())
+        {
+            var vm = new LegacyFrameworkViewModel(fw, RequestLegacyInstallAsync);
+            if (fw.version.StartsWith("4", StringComparison.Ordinal))
+                Net4Versions.Add(vm);
+            else
+                OtherLegacyVersions.Add(vm);
+        }
+
+        // Pre-select the newest 4.x (first in the JSON) so the radio group has a default.
+        if (Net4Versions.Count > 0)
+            Net4Versions[0].IsSelected = true;
     }
 
     partial void OnShowLegacyChanged(bool value) => ApplyFilter();
@@ -133,6 +165,56 @@ public partial class MainWindowViewModel : ViewModelBase
         {
             item.IsInstalling = false;
             InstallingChannel = null;
+            IsInstalling = false;
+            _installCts.Dispose();
+            _installCts = null;
+        }
+    }
+
+    /// <summary>Installs the currently selected .NET Framework 4.x version.</summary>
+    [RelayCommand]
+    private async Task InstallNet4()
+    {
+        var selected = Net4Versions.FirstOrDefault(v => v.IsSelected);
+        if (selected is not null)
+            await selected.InstallCommand.ExecuteAsync(null);
+    }
+
+    /// <summary>
+    /// Centralised install entry point for legacy .NET Framework versions (offline installer or DISM).
+    /// Shares the single-install guard and log with the modern installer.
+    /// </summary>
+    public async Task RequestLegacyInstallAsync(LegacyFramework framework, IInstallable item)
+    {
+        if (IsInstalling)
+            return;
+
+        _installCts = new CancellationTokenSource();
+        IsInstalling = true;
+        item.IsInstalling = true;
+
+        AppendLog($"──────── .NET Framework {framework.version} ────────");
+        try
+        {
+            var ok = await _legacyInstaller.InstallAsync(framework, _installProgress, _installCts.Token);
+
+            item.IsInstalled = ok || item.IsInstalled;
+            StatusMessage = ok
+                ? $".NET Framework {framework.version} installed."
+                : $".NET Framework {framework.version} installation failed — see log.";
+        }
+        catch (OperationCanceledException)
+        {
+            StatusMessage = $".NET Framework {framework.version} installation cancelled.";
+        }
+        catch (Exception ex)
+        {
+            AppendLog($"Error: {ex.Message}");
+            StatusMessage = $"Installation error: {ex.Message}";
+        }
+        finally
+        {
+            item.IsInstalling = false;
             IsInstalling = false;
             _installCts.Dispose();
             _installCts = null;

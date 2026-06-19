@@ -73,10 +73,14 @@
             </StackPanel>
         </Border>
 
-        <!-- Channel list -->
-        <Panel>
-            <ScrollViewer Padding="20,16">
-                <ItemsControl ItemsSource="{Binding Channels}">
+        <!-- Tabs: Current (.NET Core) vs Legacy (.NET Framework) -->
+        <TabControl Padding="0">
+
+            <!-- Current .NET -->
+            <TabItem Header="Current">
+                <Panel>
+                    <ScrollViewer Padding="20,16">
+                        <ItemsControl ItemsSource="{Binding Channels}">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate x:DataType="vm:DotnetChannelViewModel">
                             <Border Classes="card">
@@ -206,17 +210,80 @@
                                 </StackPanel>
                             </Border>
                         </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
-            </ScrollViewer>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
 
-            <!-- Loading overlay -->
-            <Border IsVisible="{Binding IsLoading}" Background="{DynamicResource SystemRegionBrush}" Opacity="0.7">
-                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="12">
-                    <ProgressBar IsIndeterminate="True" Width="200"/>
-                    <TextBlock Text="Loading .NET releases…" HorizontalAlignment="Center"/>
-                </StackPanel>
-            </Border>
-        </Panel>
+                    <!-- Loading overlay -->
+                    <Border IsVisible="{Binding IsLoading}" Background="{DynamicResource SystemRegionBrush}" Opacity="0.7">
+                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="12">
+                            <ProgressBar IsIndeterminate="True" Width="200"/>
+                            <TextBlock Text="Loading .NET releases…" HorizontalAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
+                </Panel>
+            </TabItem>
+
+            <!-- Legacy .NET Framework (Windows only) -->
+            <TabItem Header="Legacy" IsVisible="{Binding IsWindows}">
+                <ScrollViewer Padding="20,16">
+                    <StackPanel Spacing="12">
+
+                        <!-- 4.x cumulative line: pick one -->
+                        <Border Classes="card">
+                            <StackPanel Spacing="10">
+                                <TextBlock Text=".NET Framework 4.x — cumulative, install one version"
+                                           FontWeight="SemiBold"/>
+                                <TextBlock FontSize="12" TextWrapping="Wrap"
+                                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                           Text="Higher 4.x versions include the lower ones. Pick the newest you need."/>
+                                <ItemsControl ItemsSource="{Binding Net4Versions}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="vm:LegacyFrameworkViewModel">
+                                            <RadioButton GroupName="net4" Content="{Binding RadioLabel}"
+                                                         IsChecked="{Binding IsSelected}"/>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                                <Button Content="Install selected 4.x" Classes="accent"
+                                        HorizontalAlignment="Left"
+                                        IsEnabled="{Binding !IsInstalling}"
+                                        Command="{Binding InstallNet4Command}"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Stand-alone legacy versions -->
+                        <ItemsControl ItemsSource="{Binding OtherLegacyVersions}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="vm:LegacyFrameworkViewModel">
+                                    <Border Classes="card">
+                                        <Grid ColumnDefinitions="*,Auto" VerticalAlignment="Center">
+                                            <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding Title}" FontWeight="SemiBold"/>
+                                                <TextBlock Text="{Binding InstallTypeText}" FontSize="12"
+                                                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                            </StackPanel>
+                                            <StackPanel Grid.Column="1" Width="140" VerticalAlignment="Center">
+                                                <Button Content="Install" Classes="accent"
+                                                        HorizontalAlignment="Stretch"
+                                                        HorizontalContentAlignment="Center"
+                                                        IsVisible="{Binding !IsBusyOrInstalled}"
+                                                        Command="{Binding InstallCommand}"/>
+                                                <TextBlock Text="Installing…" HorizontalAlignment="Right"
+                                                           IsVisible="{Binding IsInstalling}"/>
+                                                <TextBlock Text="✓ Installed" HorizontalAlignment="Right"
+                                                           FontWeight="SemiBold" Foreground="#16A34A"
+                                                           IsVisible="{Binding IsInstalled}"/>
+                                            </StackPanel>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+        </TabControl>
     </DockPanel>
 </Window>
