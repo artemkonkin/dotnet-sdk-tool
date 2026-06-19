@@ -73,23 +73,37 @@ public class DotnetInstaller
     }
 
     /// <summary>
-    /// Installs the requested channel, streaming script output line-by-line to <paramref name="output"/>.
-    /// Returns true on a zero exit code.
+    /// True when Windows Desktop Runtime can be installed on the current platform (Windows only).
+    /// </summary>
+    public static bool SupportsWindowsDesktop => RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+
+    /// <summary>
+    /// Installs a .NET artifact, streaming script output line-by-line to <paramref name="output"/>.
+    /// Pass <paramref name="version"/> to install an exact version (e.g. "9.0.0"); otherwise the
+    /// latest version of <paramref name="channel"/> is installed. Returns true on a zero exit code.
     /// </summary>
     public async Task<bool> InstallAsync(
         string channel,
+        string? version,
         InstallKind kind,
         IProgress<string> output,
         CancellationToken cancellationToken)
     {
+        if (kind == InstallKind.WindowsDesktopRuntime && !SupportsWindowsDesktop)
+        {
+            output.Report("Windows Desktop Runtime can only be installed on Windows.");
+            return false;
+        }
+
         var installDir = InstallDir;
         Directory.CreateDirectory(installDir);
 
         ProcessStartInfo startInfo = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
-            ? await BuildWindowsStartInfoAsync(channel, kind, installDir, cancellationToken)
-            : await BuildUnixStartInfoAsync(channel, kind, installDir, cancellationToken);
+            ? await BuildWindowsStartInfoAsync(channel, version, kind, installDir, cancellationToken)
+            : await BuildUnixStartInfoAsync(channel, version, kind, installDir, cancellationToken);
 
-        output.Report($"Installing .NET {channel} ({Describe(kind)}) into {installDir}");
+        var target = string.IsNullOrWhiteSpace(version) ? channel : version;
+        output.Report($"Installing .NET {target} ({Describe(kind)}) into {installDir}");
         output.Report($"> {startInfo.FileName} {startInfo.Arguments}");
 
         return await RunProcessAsync(startInfo, output, cancellationToken);
@@ -134,13 +148,16 @@ public class DotnetInstaller
     }
 
     private async Task<ProcessStartInfo> BuildUnixStartInfoAsync(
-        string channel, InstallKind kind, string installDir, CancellationToken cancellationToken)
+        string channel, string? version, InstallKind kind, string installDir, CancellationToken cancellationToken)
     {
         var scriptPath = await DownloadScriptAsync(InstallScriptShUrl, "dotnet-install.sh", cancellationToken);
 
         var args = new StringBuilder();
         args.Append('"').Append(scriptPath).Append('"');
-        args.Append(" --channel ").Append(channel);
+        if (string.IsNullOrWhiteSpace(version))
+            args.Append(" --channel ").Append(channel);
+        else
+            args.Append(" --version ").Append(version);
         args.Append(" --install-dir \"").Append(installDir).Append('"');
         AppendRuntime(args, kind, dash: "--runtime ");
 
@@ -154,13 +171,16 @@ public class DotnetInstaller
     }
 
     private async Task<ProcessStartInfo> BuildWindowsStartInfoAsync(
-        string channel, InstallKind kind, string installDir, CancellationToken cancellationToken)
+        string channel, string? version, InstallKind kind, string installDir, CancellationToken cancellationToken)
     {
         var scriptPath = await DownloadScriptAsync(InstallScriptPs1Url, "dotnet-install.ps1", cancellationToken);
 
         var args = new StringBuilder();
         args.Append("-NoProfile -ExecutionPolicy Bypass -File \"").Append(scriptPath).Append('"');
-        args.Append(" -Channel ").Append(channel);
+        if (string.IsNullOrWhiteSpace(version))
+            args.Append(" -Channel ").Append(channel);
+        else
+            args.Append(" -Version ").Append(version);
         args.Append(" -InstallDir \"").Append(installDir).Append('"');
         AppendRuntime(args, kind, dash: "-Runtime ");
 
@@ -183,6 +203,9 @@ public class DotnetInstaller
             case InstallKind.AspNetCoreRuntime:
                 args.Append(' ').Append(dash).Append("aspnetcore");
                 break;
+            case InstallKind.WindowsDesktopRuntime:
+                args.Append(' ').Append(dash).Append("windowsdesktop");
+                break;
             // Sdk: no --runtime flag (default installs the SDK).
         }
     }
@@ -191,6 +214,7 @@ public class DotnetInstaller
     {
         InstallKind.Runtime => ".NET Runtime",
         InstallKind.AspNetCoreRuntime => "ASP.NET Core Runtime",
+        InstallKind.WindowsDesktopRuntime => "Windows Desktop Runtime",
         _ => "SDK",
     };
 

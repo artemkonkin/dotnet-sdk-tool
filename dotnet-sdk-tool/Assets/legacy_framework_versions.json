@@ -1,0 +1,125 @@
+{
+  "modern_dotnet_registry": "https://builds.dotnet.microsoft.com/dotnet/release-metadata/releases-index.json",
+  "legacy_frameworks": [
+    {
+      "version": "4.8.1",
+      "product": ".NET Framework",
+      "release_date": "2022-08-09",
+      "windows_only": true,
+      "install_type": "offline_installer",
+      "download_url": "https://go.microsoft.com/fwlink/?linkid=2203304"
+    },
+    {
+      "version": "4.8",
+      "product": ".NET Framework",
+      "release_date": "2019-04-18",
+      "windows_only": true,
+      "install_type": "offline_installer",
+      "download_url": "https://go.microsoft.com/fwlink/?linkid=2088631"
+    },
+    {
+      "version": "4.7.2",
+      "product": ".NET Framework",
+      "release_date": "2018-04-30",
+      "windows_only": true,
+      "install_type": "offline_installer",
+      "download_url": "https://go.microsoft.com/fwlink/?linkid=863265"
+    },
+    {
+      "version": "4.7.1",
+      "product": ".NET Framework",
+      "release_date": "2017-10-17",
+      "windows_only": true,
+      "install_type": "offline_installer",
+      "download_url": "https://go.microsoft.com/fwlink/?linkid=852108"
+    },
+    {
+      "version": "4.7",
+      "product": ".NET Framework",
+      "release_date": "2017-04-05",
+      "windows_only": true,
+      "install_type": "offline_installer",
+      "download_url": "https://go.microsoft.com/fwlink/?LinkId=825302"
+    },
+    {
+      "version": "4.6.2",
+      "product": ".NET Framework",
+      "release_date": "2016-08-02",
+      "windows_only": true,
+      "install_type": "offline_installer",
+      "download_url": "https://go.microsoft.com/fwlink/?LinkId=780677"
+    },
+    {
+      "version": "4.6.1",
+      "product": ".NET Framework",
+      "release_date": "2015-11-17",
+      "windows_only": true,
+      "install_type": "offline_installer",
+      "download_url": "https://go.microsoft.com/fwlink/?LinkId=671743"
+    },
+    {
+      "version": "4.6",
+      "product": ".NET Framework",
+      "release_date": "2015-07-20",
+      "windows_only": true,
+      "install_type": "offline_installer",
+      "download_url": "https://go.microsoft.com/fwlink/?LinkId=528232"
+    },
+    {
+      "version": "4.5.2",
+      "product": ".NET Framework",
+      "release_date": "2014-05-05",
+      "windows_only": true,
+      "install_type": "offline_installer",
+      "download_url": "https://go.microsoft.com/fwlink/?LinkId=397708"
+    },
+    {
+      "version": "4.5.1",
+      "product": ".NET Framework",
+      "release_date": "2013-10-17",
+      "windows_only": true,
+      "install_type": "offline_installer",
+      "download_url": "https://go.microsoft.com/fwlink/?LinkId=322116"
+    },
+    {
+      "version": "4.5",
+      "product": ".NET Framework",
+      "release_date": "2012-08-15",
+      "windows_only": true,
+      "install_type": "offline_installer",
+      "download_url": "https://go.microsoft.com/fwlink/?LinkId=225702"
+    },
+    {
+      "version": "4.0",
+      "product": ".NET Framework",
+      "release_date": "2010-04-12",
+      "windows_only": true,
+      "install_type": "offline_installer",
+      "download_url": "https://go.microsoft.com/fwlink/?LinkId=181012"
+    },
+    {
+      "version": "3.5 SP1",
+      "product": ".NET Framework",
+      "release_date": "2007-11-19",
+      "windows_only": true,
+      "install_type": "windows_feature",
+      "dism_name": "NetFx3"
+    },
+    {
+      "version": "2.0 SP2",
+      "product": ".NET Framework",
+      "release_date": "2009-01-16",
+      "windows_only": true,
+      "install_type": "offline_installer",
+      "download_url": "https://go.microsoft.com/fwlink/?LinkId=131013"
+    },
+    {
+      "version": "1.1 SP1",
+      "product": ".NET Framework",
+      "release_date": "2004-08-30",
+      "windows_only": true,
+      "install_type": "offline_installer",
+      "download_url": "https://go.microsoft.com/fwlink/?LinkId=41336"
+    }
+  ]
+}

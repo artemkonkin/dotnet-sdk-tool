@@ -25,9 +25,9 @@ public partial class MainWindowViewModel : ViewModelBase
     [ObservableProperty] private string _statusMessage = "Loading .NET releases…";
     [ObservableProperty] private string _installLog = string.Empty;
 
-    [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(IsInstalling))]
-    private DotnetChannelViewModel? _installingChannel;
+    [ObservableProperty] private DotnetChannelViewModel? _installingChannel;
+
+    [ObservableProperty] private bool _isInstalling;
 
     [ObservableProperty] private bool _showLegacy;
 
@@ -35,7 +35,6 @@ public partial class MainWindowViewModel : ViewModelBase
 
     public string PlatformDescription => DotnetInstaller.PlatformDescription;
     public string InstallDir => DotnetInstaller.InstallDir;
-    public bool IsInstalling => InstallingChannel is not null;
 
     public MainWindowViewModel()
         : this(new HttpClient())
@@ -66,7 +65,7 @@ public partial class MainWindowViewModel : ViewModelBase
 
             _allChannels = releases.Select(r =>
             {
-                var vm = new DotnetChannelViewModel(r);
+                var vm = new DotnetChannelViewModel(r, _releaseService, RequestInstallAsync);
                 vm.IsInstalled = installed.Any(v => v.StartsWith(r.channel_version + ".", StringComparison.Ordinal));
                 return vm;
             }).ToList();
@@ -94,31 +93,36 @@ public partial class MainWindowViewModel : ViewModelBase
             Channels.Add(channel);
     }
 
-    [RelayCommand(CanExecute = nameof(CanInstall))]
-    private async Task InstallAsync(DotnetChannelViewModel channel)
+    /// <summary>
+    /// Centralised install entry point invoked by channel cards and individual version rows.
+    /// Only one install runs at a time. Pass <paramref name="version"/> = null for the channel latest.
+    /// </summary>
+    public async Task RequestInstallAsync(string channelVersion, string? version, InstallKind kind, IInstallable item)
     {
-        if (channel is null || IsInstalling)
+        if (IsInstalling)
             return;
 
-        _installCts = new CancellationTokenSource();
-        InstallingChannel = channel;
-        channel.IsInstalling = true;
-        InstallCommand.NotifyCanExecuteChanged();
+        var label = string.IsNullOrWhiteSpace(version) ? channelVersion : version;
 
-        AppendLog($"──────── .NET {channel.ChannelVersion} ────────");
+        _installCts = new CancellationTokenSource();
+        InstallingChannel = item as DotnetChannelViewModel;
+        IsInstalling = true;
+        item.IsInstalling = true;
+
+        AppendLog($"──────── .NET {label} ({kind}) ────────");
         try
         {
             var ok = await _installer.InstallAsync(
-                channel.ChannelVersion, channel.SelectedKind, _installProgress, _installCts.Token);
+                channelVersion, version, kind, _installProgress, _installCts.Token);
 
-            channel.IsInstalled = ok || channel.IsInstalled;
+            item.IsInstalled = ok || item.IsInstalled;
             StatusMessage = ok
-                ? $".NET {channel.ChannelVersion} installed."
-                : $".NET {channel.ChannelVersion} installation failed — see log.";
+                ? $".NET {label} installed."
+                : $".NET {label} installation failed — see log.";
         }
         catch (OperationCanceledException)
         {
-            StatusMessage = $".NET {channel.ChannelVersion} installation cancelled.";
+            StatusMessage = $".NET {label} installation cancelled.";
         }
         catch (Exception ex)
         {
@@ -127,15 +131,13 @@ public partial class MainWindowViewModel : ViewModelBase
         }
         finally
         {
-            channel.IsInstalling = false;
+            item.IsInstalling = false;
             InstallingChannel = null;
+            IsInstalling = false;
             _installCts.Dispose();
             _installCts = null;
-            InstallCommand.NotifyCanExecuteChanged();
         }
     }
-
-    private bool CanInstall(DotnetChannelViewModel? channel) => channel is not null && !IsInstalling;
 
     [RelayCommand]
     private void Cancel() => _installCts?.Cancel();

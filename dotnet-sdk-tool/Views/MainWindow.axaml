@@ -1,6 +1,7 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:dotnet_sdk_tool_template.ViewModels"
+        xmlns:services="using:dotnet_sdk_tool_template.Services"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d" d:DesignWidth="960" d:DesignHeight="640"
@@ -46,6 +47,7 @@
 
         <!-- Status / log panel -->
         <Border DockPanel.Dock="Bottom" Padding="20,10"
+                Background="{DynamicResource LayerFillColorDefaultBrush}"
                 BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}" BorderThickness="0,1,0,0">
             <StackPanel Spacing="8">
                 <Grid ColumnDefinitions="*,Auto">
@@ -78,61 +80,130 @@
                     <ItemsControl.ItemTemplate>
                         <DataTemplate x:DataType="vm:DotnetChannelViewModel">
                             <Border Classes="card">
-                                <Grid ColumnDefinitions="Auto,*,Auto" VerticalAlignment="Center">
+                                <StackPanel Spacing="10">
+                                    <Grid ColumnDefinitions="Auto,*,Auto" VerticalAlignment="Center">
 
-                                    <!-- Version block -->
-                                    <StackPanel Grid.Column="0" Width="92" VerticalAlignment="Center">
-                                        <TextBlock Text="{Binding ChannelVersion}" FontSize="26" FontWeight="Bold"/>
-                                        <TextBlock Text=".NET" FontSize="11"
-                                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                                    </StackPanel>
-
-                                    <!-- Details -->
-                                    <StackPanel Grid.Column="1" Spacing="6" VerticalAlignment="Center">
-                                        <StackPanel Orientation="Horizontal" Spacing="8">
-                                            <Border Classes="typePill" IsVisible="{Binding ReleaseType, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
-                                                <TextBlock Text="{Binding ReleaseType}"/>
-                                            </Border>
-                                            <Border Classes="pill" Background="{Binding StatusKey, Converter={StaticResource StatusToBrush}}">
-                                                <TextBlock Text="{Binding StatusText}"/>
-                                            </Border>
-                                            <Border Classes="typePill" IsVisible="{Binding IsSecurity}">
-                                                <TextBlock Text="🛡 Security update"/>
-                                            </Border>
+                                        <!-- Version block -->
+                                        <StackPanel Grid.Column="0" Width="92" VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding ChannelVersion}" FontSize="26" FontWeight="Bold"/>
+                                            <TextBlock Text=".NET" FontSize="11"
+                                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
                                         </StackPanel>
-                                        <TextBlock FontSize="13"
-                                                   Text="{Binding LatestSdk, StringFormat='Latest SDK: {0}'}"/>
-                                        <TextBlock FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                                   Text="{Binding EolText}"/>
-                                    </StackPanel>
 
-                                    <!-- Actions -->
-                                    <StackPanel Grid.Column="2" Spacing="8" VerticalAlignment="Center"
-                                                HorizontalAlignment="Right" Width="150">
-                                        <CheckBox Content="Runtime only" IsChecked="{Binding RuntimeOnly}"
-                                                  IsEnabled="{Binding !IsBusyOrInstalled}" FontSize="12"
-                                                  HorizontalAlignment="Right"/>
+                                        <!-- Details -->
+                                        <StackPanel Grid.Column="1" Spacing="6" VerticalAlignment="Center">
+                                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                                <Border Classes="typePill" IsVisible="{Binding ReleaseType, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                                                    <TextBlock Text="{Binding ReleaseType}"/>
+                                                </Border>
+                                                <Border Classes="pill" Background="{Binding StatusKey, Converter={StaticResource StatusToBrush}}">
+                                                    <TextBlock Text="{Binding StatusText}"/>
+                                                </Border>
+                                                <Border Classes="typePill" IsVisible="{Binding IsSecurity}">
+                                                    <TextBlock Text="🛡 Security update"/>
+                                                </Border>
+                                            </StackPanel>
+                                            <TextBlock FontSize="13"
+                                                       Text="{Binding LatestSdk, StringFormat='Latest SDK: {0}'}"/>
+                                            <TextBlock FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                       Text="{Binding EolText}"/>
+                                        </StackPanel>
 
-                                        <!-- Install -->
-                                        <Button Content="Install" HorizontalAlignment="Stretch"
-                                                HorizontalContentAlignment="Center"
-                                                Classes="accent"
-                                                IsVisible="{Binding !IsBusyOrInstalled}"
-                                                Command="{Binding $parent[ItemsControl].((vm:MainWindowViewModel)DataContext).InstallCommand}"
-                                                CommandParameter="{Binding}"/>
+                                        <!-- Actions -->
+                                        <StackPanel Grid.Column="2" Spacing="8" VerticalAlignment="Center"
+                                                    HorizontalAlignment="Right" Width="200">
+                                            <ComboBox ItemsSource="{Binding AvailableKinds}"
+                                                      SelectedItem="{Binding SelectedKind}"
+                                                      IsEnabled="{Binding !IsBusyOrInstalled}"
+                                                      HorizontalAlignment="Stretch" FontSize="12">
+                                                <ComboBox.ItemTemplate>
+                                                    <DataTemplate x:DataType="vm:InstallKindOption">
+                                                        <TextBlock Text="{Binding Label}"/>
+                                                    </DataTemplate>
+                                                </ComboBox.ItemTemplate>
+                                            </ComboBox>
 
-                                        <!-- Installing -->
-                                        <Button Content="Installing… Cancel" HorizontalAlignment="Stretch"
-                                                HorizontalContentAlignment="Center"
-                                                IsVisible="{Binding IsInstalling}"
-                                                Command="{Binding $parent[ItemsControl].((vm:MainWindowViewModel)DataContext).CancelCommand}"/>
+                                            <!-- Install latest -->
+                                            <Button Content="Install latest" HorizontalAlignment="Stretch"
+                                                    HorizontalContentAlignment="Center"
+                                                    Classes="accent"
+                                                    IsVisible="{Binding !IsBusyOrInstalled}"
+                                                    Command="{Binding InstallLatestCommand}"/>
 
-                                        <!-- Installed -->
-                                        <TextBlock Text="✓ Installed" HorizontalAlignment="Right"
-                                                   FontWeight="SemiBold" Foreground="#16A34A"
-                                                   IsVisible="{Binding IsInstalled}"/>
-                                    </StackPanel>
-                                </Grid>
+                                            <!-- Installing -->
+                                            <Button Content="Installing… Cancel" HorizontalAlignment="Stretch"
+                                                    HorizontalContentAlignment="Center"
+                                                    IsVisible="{Binding IsInstalling}"
+                                                    Command="{Binding $parent[ItemsControl].((vm:MainWindowViewModel)DataContext).CancelCommand}"/>
+
+                                            <!-- Installed -->
+                                            <TextBlock Text="✓ Installed" HorizontalAlignment="Right"
+                                                       FontWeight="SemiBold" Foreground="#16A34A"
+                                                       IsVisible="{Binding IsInstalled}"/>
+                                        </StackPanel>
+                                    </Grid>
+
+                                    <!-- All versions -->
+                                    <Expander Header="All versions" HorizontalAlignment="Stretch"
+                                              IsExpanded="{Binding IsExpanded}">
+                                        <StackPanel Spacing="6">
+                                            <ProgressBar IsIndeterminate="True" Height="4"
+                                                         IsVisible="{Binding IsLoadingReleases}"/>
+                                            <TextBlock Text="{Binding ReleasesError}" Foreground="#DC2626"
+                                                       TextWrapping="Wrap"
+                                                       IsVisible="{Binding ReleasesError, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+
+                                            <ItemsControl ItemsSource="{Binding Releases}">
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate x:DataType="vm:DotnetReleaseViewModel">
+                                                        <Border Padding="0,8" BorderThickness="0,0,0,1"
+                                                                BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}">
+                                                            <Grid ColumnDefinitions="Auto,*,Auto" VerticalAlignment="Center">
+                                                                <StackPanel Grid.Column="0" Width="110" VerticalAlignment="Center">
+                                                                    <TextBlock Text="{Binding ReleaseVersion}" FontWeight="SemiBold"/>
+                                                                    <TextBlock Text="{Binding ReleaseDate}" FontSize="11"
+                                                                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                                                </StackPanel>
+
+                                                                <TextBlock Grid.Column="1" Text="{Binding CveText}"
+                                                                           VerticalAlignment="Center" FontSize="12"
+                                                                           Foreground="#B45309"
+                                                                           IsVisible="{Binding IsSecurity}"/>
+
+                                                                <WrapPanel Grid.Column="2" Orientation="Horizontal"
+                                                                           HorizontalAlignment="Right">
+                                                                    <Button Content="{Binding SdkButtonText}" Margin="4"
+                                                                            FontSize="11" IsVisible="{Binding HasSdk}"
+                                                                            IsEnabled="{Binding !IsBusyOrInstalled}"
+                                                                            Command="{Binding InstallKindCommand}"
+                                                                            CommandParameter="{x:Static services:InstallKind.Sdk}"/>
+                                                                    <Button Content="{Binding RuntimeButtonText}" Margin="4"
+                                                                            FontSize="11" IsVisible="{Binding HasRuntime}"
+                                                                            IsEnabled="{Binding !IsBusyOrInstalled}"
+                                                                            Command="{Binding InstallKindCommand}"
+                                                                            CommandParameter="{x:Static services:InstallKind.Runtime}"/>
+                                                                    <Button Content="{Binding AspNetButtonText}" Margin="4"
+                                                                            FontSize="11" IsVisible="{Binding HasAspNet}"
+                                                                            IsEnabled="{Binding !IsBusyOrInstalled}"
+                                                                            Command="{Binding InstallKindCommand}"
+                                                                            CommandParameter="{x:Static services:InstallKind.AspNetCoreRuntime}"/>
+                                                                    <Button Content="{Binding WindowsDesktopButtonText}" Margin="4"
+                                                                            FontSize="11" IsVisible="{Binding HasWindowsDesktop}"
+                                                                            IsEnabled="{Binding !IsBusyOrInstalled}"
+                                                                            Command="{Binding InstallKindCommand}"
+                                                                            CommandParameter="{x:Static services:InstallKind.WindowsDesktopRuntime}"/>
+                                                                    <TextBlock Text="✓" Foreground="#16A34A" Margin="4"
+                                                                               VerticalAlignment="Center" FontWeight="Bold"
+                                                                               IsVisible="{Binding IsInstalled}"/>
+                                                                </WrapPanel>
+                                                            </Grid>
+                                                        </Border>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                        </StackPanel>
+                                    </Expander>
+                                </StackPanel>
                             </Border>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
