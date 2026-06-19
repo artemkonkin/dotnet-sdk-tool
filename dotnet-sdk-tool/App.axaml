@@ -12,22 +12,23 @@
     <Application.Resources>
         <conv:StatusToBrushConverter x:Key="StatusToBrush"/>
 
-        <!-- ============ Terminal palette (modern TUI) ============ -->
-        <SolidColorBrush x:Key="Bg"        Color="#0A0E14"/>
-        <SolidColorBrush x:Key="Panel"     Color="#0E141F"/>
-        <SolidColorBrush x:Key="PanelAlt"  Color="#070A10"/>
-        <SolidColorBrush x:Key="RowHover"  Color="#121C2A"/>
-        <SolidColorBrush x:Key="Hairline"  Color="#1C2837"/>
-        <SolidColorBrush x:Key="HairlineHot" Color="#2C3E54"/>
-        <SolidColorBrush x:Key="Text"      Color="#C8D3E0"/>
-        <SolidColorBrush x:Key="Muted"     Color="#6B7B90"/>
-        <SolidColorBrush x:Key="Faint"     Color="#43526A"/>
-        <SolidColorBrush x:Key="Green"     Color="#4ADE80"/>
-        <SolidColorBrush x:Key="GreenDim"  Color="#1C3A29"/>
-        <SolidColorBrush x:Key="Amber"     Color="#FBBF24"/>
-        <SolidColorBrush x:Key="Blue"      Color="#60A5FA"/>
-        <SolidColorBrush x:Key="Magenta"   Color="#C084FC"/>
-        <SolidColorBrush x:Key="Red"       Color="#F87171"/>
+        <!-- ============ Modern terminal palette (Tokyo Night) ============ -->
+        <SolidColorBrush x:Key="Bg"          Color="#1A1B26"/>
+        <SolidColorBrush x:Key="PanelAlt"    Color="#16161E"/>
+        <SolidColorBrush x:Key="Panel"       Color="#1F2335"/>
+        <SolidColorBrush x:Key="RowHover"    Color="#272D43"/>
+        <SolidColorBrush x:Key="Hairline"    Color="#222536"/>
+        <SolidColorBrush x:Key="HairlineHot" Color="#3B4261"/>
+        <SolidColorBrush x:Key="Text"        Color="#C0CAF5"/>
+        <SolidColorBrush x:Key="Muted"       Color="#828BB8"/>
+        <SolidColorBrush x:Key="Faint"       Color="#565F89"/>
+        <SolidColorBrush x:Key="Green"       Color="#9ECE6A"/>
+        <SolidColorBrush x:Key="GreenDim"    Color="#243227"/>
+        <SolidColorBrush x:Key="Amber"       Color="#E0AF68"/>
+        <SolidColorBrush x:Key="Blue"        Color="#7AA2F7"/>
+        <SolidColorBrush x:Key="Cyan"        Color="#7DCFFF"/>
+        <SolidColorBrush x:Key="Magenta"     Color="#BB9AF7"/>
+        <SolidColorBrush x:Key="Red"         Color="#F7768E"/>
 
         <FontFamily x:Key="MonoFont">Cascadia Code,Cascadia Mono,JetBrains Mono,Fira Code,Consolas,monospace</FontFamily>
     </Application.Resources>
@@ -40,7 +41,7 @@
             <Setter Property="FontFamily" Value="{StaticResource MonoFont}"/>
         </Style>
 
-        <!-- ===================== Tabs as terminal commands ===================== -->
+        <!-- ===================== Tabs ===================== -->
         <Style Selector="TabControl">
             <Setter Property="Background" Value="Transparent"/>
         </Style>
@@ -51,36 +52,55 @@
             <Setter Property="FontFamily" Value="{StaticResource MonoFont}"/>
             <Setter Property="FontSize" Value="13"/>
             <Setter Property="Foreground" Value="{StaticResource Muted}"/>
-            <Setter Property="Padding" Value="12,6"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Padding" Value="14,6"/>
+            <Setter Property="Margin" Value="0,0,6,0"/>
             <Setter Property="MinHeight" Value="0"/>
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <Border Name="tabRoot" Background="{TemplateBinding Background}"
+                            CornerRadius="6" Padding="{TemplateBinding Padding}">
+                        <ContentPresenter Content="{TemplateBinding Header}"
+                                          ContentTemplate="{TemplateBinding HeaderTemplate}"
+                                          Foreground="{TemplateBinding Foreground}"
+                                          HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                </ControlTemplate>
+            </Setter>
+        </Style>
+        <Style Selector="TabItem:pointerover">
+            <Setter Property="Background" Value="{StaticResource RowHover}"/>
+            <Setter Property="Foreground" Value="{StaticResource Text}"/>
         </Style>
         <Style Selector="TabItem:selected">
+            <Setter Property="Background" Value="{StaticResource GreenDim}"/>
             <Setter Property="Foreground" Value="{StaticResource Green}"/>
         </Style>
-        <Style Selector="TabItem:selected /template/ Border#PART_SelectedPipe">
-            <Setter Property="Background" Value="{StaticResource Green}"/>
+        <Style Selector="TabItem:selected:pointerover">
+            <Setter Property="Background" Value="{StaticResource GreenDim}"/>
+            <Setter Property="Foreground" Value="{StaticResource Green}"/>
         </Style>
 
-        <!-- ===================== Panels (boxed) ===================== -->
+        <!-- ===================== Panels ===================== -->
         <Style Selector="Border.panel">
             <Setter Property="Background" Value="{StaticResource Panel}"/>
             <Setter Property="BorderBrush" Value="{StaticResource Hairline}"/>
             <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="CornerRadius" Value="8"/>
         </Style>
 
-        <!-- ===================== Channel row ===================== -->
-        <Style Selector="Border.row">
+        <!-- Row separator (no hover here) -->
+        <Style Selector="Border.item">
             <Setter Property="BorderBrush" Value="{StaticResource Hairline}"/>
             <Setter Property="BorderThickness" Value="0,0,0,1"/>
-            <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="Transitions">
-                <Transitions>
-                    <BrushTransition Property="Background" Duration="0:0:0.12"/>
-                </Transitions>
-            </Setter>
         </Style>
-        <Style Selector="Border.row:pointerover">
+
+        <!-- Clean hover highlight: instant, rounded, no transition artifacts -->
+        <Style Selector="Border.hover">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="CornerRadius" Value="6"/>
+        </Style>
+        <Style Selector="Border.hover:pointerover">
             <Setter Property="Background" Value="{StaticResource RowHover}"/>
         </Style>
 
@@ -95,15 +115,15 @@
             <Setter Property="VerticalAlignment" Value="Center"/>
             <Setter Property="HorizontalContentAlignment" Value="Center"/>
             <Setter Property="VerticalContentAlignment" Value="Center"/>
-            <Setter Property="Foreground" Value="{StaticResource Faint}"/>
-            <Setter Property="FontFamily" Value="{StaticResource MonoFont}"/>
-            <Setter Property="FontSize" Value="11"/>
         </Style>
         <Style Selector="ToggleButton.chevron:pointerover /template/ ContentPresenter">
-            <Setter Property="Background" Value="{StaticResource RowHover}"/>
+            <Setter Property="Background" Value="Transparent"/>
+        </Style>
+        <Style Selector="ToggleButton.chevron:checked /template/ ContentPresenter">
+            <Setter Property="Background" Value="Transparent"/>
         </Style>
         <Style Selector="ToggleButton.chevron Path">
-            <Setter Property="Fill" Value="{StaticResource Muted}"/>
+            <Setter Property="Fill" Value="{StaticResource Faint}"/>
             <Setter Property="RenderTransform" Value="rotate(0deg)"/>
             <Setter Property="Transitions">
                 <Transitions>
@@ -111,12 +131,15 @@
                 </Transitions>
             </Setter>
         </Style>
+        <Style Selector="ToggleButton.chevron:pointerover Path">
+            <Setter Property="Fill" Value="{StaticResource Muted}"/>
+        </Style>
         <Style Selector="ToggleButton.chevron:checked Path">
             <Setter Property="Fill" Value="{StaticResource Green}"/>
             <Setter Property="RenderTransform" Value="rotate(90deg)"/>
         </Style>
 
-        <!-- ===================== Bracket buttons ===================== -->
+        <!-- ===================== Buttons ===================== -->
         <Style Selector="Button.term">
             <Setter Property="FontFamily" Value="{StaticResource MonoFont}"/>
             <Setter Property="FontSize" Value="12"/>
@@ -125,7 +148,7 @@
             <Setter Property="BorderBrush" Value="{StaticResource GreenDim}"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="Padding" Value="10,4"/>
-            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="CornerRadius" Value="5"/>
             <Setter Property="HorizontalContentAlignment" Value="Center"/>
         </Style>
         <Style Selector="Button.term:pointerover /template/ ContentPresenter">
@@ -138,7 +161,6 @@
             <Setter Property="BorderBrush" Value="{StaticResource Hairline}"/>
         </Style>
 
-        <!-- Neutral bracket button -->
         <Style Selector="Button.termghost">
             <Setter Property="FontFamily" Value="{StaticResource MonoFont}"/>
             <Setter Property="FontSize" Value="12"/>
@@ -147,7 +169,7 @@
             <Setter Property="BorderBrush" Value="{StaticResource Hairline}"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="Padding" Value="10,4"/>
-            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="CornerRadius" Value="5"/>
             <Setter Property="HorizontalContentAlignment" Value="Center"/>
         </Style>
         <Style Selector="Button.termghost:pointerover /template/ ContentPresenter">
@@ -156,24 +178,22 @@
             <Setter Property="Foreground" Value="{StaticResource Text}"/>
         </Style>
 
-        <!-- Danger bracket button -->
         <Style Selector="Button.termdanger">
             <Setter Property="FontFamily" Value="{StaticResource MonoFont}"/>
             <Setter Property="FontSize" Value="12"/>
             <Setter Property="Foreground" Value="{StaticResource Red}"/>
             <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="BorderBrush" Value="#3A1F22"/>
+            <Setter Property="BorderBrush" Value="#3A2330"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="Padding" Value="10,4"/>
-            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="CornerRadius" Value="5"/>
             <Setter Property="HorizontalContentAlignment" Value="Center"/>
         </Style>
         <Style Selector="Button.termdanger:pointerover /template/ ContentPresenter">
-            <Setter Property="Background" Value="#2A1416"/>
+            <Setter Property="Background" Value="#3A2330"/>
             <Setter Property="BorderBrush" Value="{StaticResource Red}"/>
         </Style>
 
-        <!-- Tiny release-kind button -->
         <Style Selector="Button.kindlet">
             <Setter Property="FontFamily" Value="{StaticResource MonoFont}"/>
             <Setter Property="FontSize" Value="11"/>
@@ -197,41 +217,13 @@
             <Setter Property="FontSize" Value="12"/>
             <Setter Property="MinHeight" Value="28"/>
             <Setter Property="Padding" Value="9,2"/>
-            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="CornerRadius" Value="5"/>
             <Setter Property="Foreground" Value="{StaticResource Text}"/>
         </Style>
         <Style Selector="ComboBox.kind /template/ Border#Background">
             <Setter Property="Background" Value="{StaticResource PanelAlt}"/>
             <Setter Property="BorderBrush" Value="{StaticResource Hairline}"/>
             <Setter Property="BorderThickness" Value="1"/>
-        </Style>
-
-        <!-- Keycap hint -->
-        <Style Selector="Border.key">
-            <Setter Property="Background" Value="{StaticResource PanelAlt}"/>
-            <Setter Property="BorderBrush" Value="{StaticResource Hairline}"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="CornerRadius" Value="4"/>
-            <Setter Property="Padding" Value="6,1"/>
-            <Setter Property="VerticalAlignment" Value="Center"/>
-        </Style>
-        <Style Selector="Border.key > TextBlock">
-            <Setter Property="FontFamily" Value="{StaticResource MonoFont}"/>
-            <Setter Property="FontSize" Value="11"/>
-            <Setter Property="Foreground" Value="{StaticResource Muted}"/>
-        </Style>
-
-        <!-- Blinking cursor -->
-        <Style Selector="TextBlock.cursor">
-            <Setter Property="Foreground" Value="{StaticResource Green}"/>
-            <Style.Animations>
-                <Animation Duration="0:0:1.1" IterationCount="INFINITE">
-                    <KeyFrame Cue="0%"><Setter Property="Opacity" Value="1"/></KeyFrame>
-                    <KeyFrame Cue="49%"><Setter Property="Opacity" Value="1"/></KeyFrame>
-                    <KeyFrame Cue="50%"><Setter Property="Opacity" Value="0"/></KeyFrame>
-                    <KeyFrame Cue="100%"><Setter Property="Opacity" Value="0"/></KeyFrame>
-                </Animation>
-            </Style.Animations>
         </Style>
     </Application.Styles>
 </Application>

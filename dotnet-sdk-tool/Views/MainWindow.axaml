@@ -62,11 +62,12 @@
                                 <ItemsControl ItemsSource="{Binding Channels}">
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate x:DataType="vm:DotnetChannelViewModel">
-                                            <Border Classes="row">
+                                            <Border Classes="item">
                                                 <StackPanel>
 
+                                                    <Border Classes="hover" Margin="6,1">
                                                     <Grid ColumnDefinitions="24,66,128,*,Auto,Auto"
-                                                          Margin="12,0" MinHeight="42" VerticalAlignment="Center">
+                                                          Margin="6,0" MinHeight="42" VerticalAlignment="Center">
 
                                                         <!-- chevron -->
                                                         <ToggleButton Grid.Column="0" Classes="chevron"
@@ -132,6 +133,7 @@
                                                                        IsVisible="{Binding IsInstalled}"/>
                                                         </StackPanel>
                                                     </Grid>
+                                                    </Border>
 
                                                     <!-- expanded releases -->
                                                     <Border IsVisible="{Binding IsExpanded}"
@@ -149,8 +151,8 @@
                                                             <ItemsControl ItemsSource="{Binding Releases}">
                                                                 <ItemsControl.ItemTemplate>
                                                                     <DataTemplate x:DataType="vm:DotnetReleaseViewModel">
-                                                                        <Border Classes="row" Padding="0">
-                                                                            <Grid ColumnDefinitions="140,*,Auto" Margin="14,0"
+                                                                        <Border Classes="hover" Margin="2,0">
+                                                                            <Grid ColumnDefinitions="140,*,Auto" Margin="10,0"
                                                                                   MinHeight="33" VerticalAlignment="Center">
                                                                                 <StackPanel Grid.Column="0" Orientation="Horizontal"
                                                                                             Spacing="8" VerticalAlignment="Center">
@@ -261,8 +263,9 @@
                                 <ItemsControl ItemsSource="{Binding OtherLegacyVersions}">
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate x:DataType="vm:LegacyFrameworkViewModel">
-                                            <Border Classes="row">
-                                                <Grid ColumnDefinitions="*,Auto" Margin="14,0" MinHeight="46"
+                                            <Border Classes="item">
+                                                <Border Classes="hover" Margin="4,1">
+                                                <Grid ColumnDefinitions="*,Auto" Margin="10,0" MinHeight="46"
                                                       VerticalAlignment="Center">
                                                     <StackPanel Grid.Column="0" Spacing="1" VerticalAlignment="Center">
                                                         <TextBlock Text="{Binding Title}" FontWeight="SemiBold" FontSize="13"
@@ -280,6 +283,7 @@
                                                                FontSize="12" VerticalAlignment="Center" HorizontalAlignment="Right"
                                                                IsVisible="{Binding IsInstalled}"/>
                                                 </Grid>
+                                                </Border>
                                             </Border>
                                         </DataTemplate>
                                     </ItemsControl.ItemTemplate>
