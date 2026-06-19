@@ -7,7 +7,9 @@
         mc:Ignorable="d" d:DesignWidth="960" d:DesignHeight="640"
         x:Class="dotnet_sdk_tool_template.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
-        Width="960" Height="660" MinWidth="720" MinHeight="520"
+        Width="1400" Height="900" MinWidth="880" MinHeight="560"
+        Background="{StaticResource Bg}"
+        FontFamily="{StaticResource MonoFont}"
         Icon="/Assets/avalonia-logo.ico"
         Title=".NET SDK Installer">
 
@@ -15,275 +17,305 @@
         <vm:MainWindowViewModel/>
     </Design.DataContext>
 
-    <DockPanel LastChildFill="True">
+    <Grid RowDefinitions="Auto,*,Auto" Margin="10">
 
-        <!-- Header -->
-        <Border DockPanel.Dock="Top" Padding="20,16" Background="{DynamicResource LayerFillColorDefaultBrush}"
-                BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}" BorderThickness="0,0,0,1">
-            <Grid ColumnDefinitions="Auto,*,Auto,Auto" VerticalAlignment="Center">
-                <Border Grid.Column="0" Width="44" Height="44" CornerRadius="10" Margin="0,0,14,0"
-                        Background="{DynamicResource AccentFillColorDefaultBrush}">
-                    <TextBlock Text=".N" FontSize="18" FontWeight="Bold" Foreground="White"
-                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                </Border>
+        <!-- ============================ Title bar ============================ -->
+        <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto,Auto" VerticalAlignment="Center" Margin="4,2,4,12">
+            <TextBlock Grid.Column="0" VerticalAlignment="Center" FontSize="14">
+                <Run Text="dotnet-sdk-installer" Foreground="{StaticResource Text}"/>
+                <Run Text="{Binding PlatformDescription}" Foreground="{StaticResource Faint}"/>
+            </TextBlock>
 
-                <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="1">
-                    <TextBlock Text=".NET SDK Installer" FontSize="20" FontWeight="SemiBold"/>
-                    <TextBlock Text="{Binding PlatformDescription, StringFormat='Install any supported .NET — {0}'}"
-                               FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                </StackPanel>
-
-                <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center"
-                            Margin="0,0,12,0">
-                    <TextBlock Text="Show legacy" VerticalAlignment="Center" FontSize="12"
-                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                    <ToggleSwitch IsChecked="{Binding ShowLegacy}" OnContent="" OffContent=""/>
-                </StackPanel>
-
-                <Button Grid.Column="3" Content="Refresh" Command="{Binding LoadCommand}"
-                        IsEnabled="{Binding !IsLoading}" VerticalAlignment="Center"/>
-            </Grid>
-        </Border>
-
-        <!-- Status / log panel -->
-        <Border DockPanel.Dock="Bottom" Padding="20,10"
-                Background="{DynamicResource LayerFillColorDefaultBrush}"
-                BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}" BorderThickness="0,1,0,0">
-            <StackPanel Spacing="8">
-                <Grid ColumnDefinitions="*,Auto">
-                    <TextBlock Grid.Column="0" Text="{Binding StatusMessage}" VerticalAlignment="Center"
-                               TextTrimming="CharacterEllipsis"
-                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                    <ProgressBar Grid.Column="1" Width="160" IsIndeterminate="True"
-                                 IsVisible="{Binding IsInstalling}" VerticalAlignment="Center"/>
-                </Grid>
-
-                <Expander Header="Installation log" HorizontalAlignment="Stretch">
-                    <Grid RowDefinitions="*,Auto" Height="180">
-                        <TextBox Grid.Row="0" Text="{Binding InstallLog, Mode=OneWay}" IsReadOnly="True"
-                                 FontFamily="Cascadia Mono,Consolas,Menlo,monospace" FontSize="12"
-                                 AcceptsReturn="True" TextWrapping="NoWrap"
-                                 VerticalContentAlignment="Top"
-                                 ScrollViewer.VerticalScrollBarVisibility="Auto"
-                                 ScrollViewer.HorizontalScrollBarVisibility="Auto"/>
-                        <Button Grid.Row="1" Content="Clear log" Command="{Binding ClearLogCommand}"
-                                HorizontalAlignment="Right" Margin="0,8,0,0"/>
-                    </Grid>
-                </Expander>
+            <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center"
+                        Margin="0,0,12,0">
+                <TextBlock Text="legacy" VerticalAlignment="Center" FontSize="12"
+                           Foreground="{StaticResource Muted}"/>
+                <ToggleSwitch IsChecked="{Binding ShowLegacy}" OnContent="" OffContent=""/>
             </StackPanel>
-        </Border>
 
-        <!-- Tabs: Current (.NET Core) vs Legacy (.NET Framework) -->
-        <TabControl Padding="0">
+            <Button Grid.Column="3" Content="↻ refresh" Classes="termghost"
+                    Command="{Binding LoadCommand}"
+                    IsEnabled="{Binding !IsLoading}" VerticalAlignment="Center"/>
+        </Grid>
 
-            <!-- Current .NET -->
-            <TabItem Header="Current">
-                <Panel>
-                    <ScrollViewer Padding="20,16">
-                        <ItemsControl ItemsSource="{Binding Channels}">
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate x:DataType="vm:DotnetChannelViewModel">
-                            <Border Classes="card">
-                                <StackPanel Spacing="10">
-                                    <Grid ColumnDefinitions="Auto,*,Auto" VerticalAlignment="Center">
+        <!-- ============================ Body panel ============================ -->
+        <Border Grid.Row="1" Classes="panel" ClipToBounds="True">
+            <TabControl Padding="0">
 
-                                        <!-- Version block -->
-                                        <StackPanel Grid.Column="0" Width="92" VerticalAlignment="Center">
-                                            <TextBlock Text="{Binding ChannelVersion}" FontSize="26" FontWeight="Bold"/>
-                                            <TextBlock Text=".NET" FontSize="11"
-                                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                                        </StackPanel>
+                <!-- ===================== Current .NET ===================== -->
+                <TabItem Header="current">
+                    <Panel ClipToBounds="True">
+                        <Grid RowDefinitions="Auto,*">
 
-                                        <!-- Details -->
-                                        <StackPanel Grid.Column="1" Spacing="6" VerticalAlignment="Center">
-                                            <StackPanel Orientation="Horizontal" Spacing="8">
-                                                <Border Classes="typePill" IsVisible="{Binding ReleaseType, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
-                                                    <TextBlock Text="{Binding ReleaseType}"/>
-                                                </Border>
-                                                <Border Classes="pill" Background="{Binding StatusKey, Converter={StaticResource StatusToBrush}}">
-                                                    <TextBlock Text="{Binding StatusText}"/>
-                                                </Border>
-                                                <Border Classes="typePill" IsVisible="{Binding IsSecurity}">
-                                                    <TextBlock Text="🛡 Security update"/>
-                                                </Border>
-                                            </StackPanel>
-                                            <TextBlock FontSize="13"
-                                                       Text="{Binding LatestSdk, StringFormat='Latest SDK: {0}'}"/>
-                                            <TextBlock FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                                       Text="{Binding EolText}"/>
-                                        </StackPanel>
+                            <!-- column header -->
+                            <Grid Grid.Row="0" Margin="12,8,12,4" ColumnDefinitions="24,66,128,*,Auto"
+                                  Background="Transparent">
+                                <TextBlock Grid.Column="1" Text="VER" FontSize="10" Foreground="{StaticResource Faint}"/>
+                                <TextBlock Grid.Column="2" Text="STATUS" FontSize="10" Foreground="{StaticResource Faint}"/>
+                                <TextBlock Grid.Column="3" Text="LATEST SDK" FontSize="10" Foreground="{StaticResource Faint}"/>
+                                <TextBlock Grid.Column="4" Text="ACTION" FontSize="10" Foreground="{StaticResource Faint}"
+                                           Margin="0,0,6,0"/>
+                            </Grid>
 
-                                        <!-- Actions -->
-                                        <StackPanel Grid.Column="2" Spacing="8" VerticalAlignment="Center"
-                                                    HorizontalAlignment="Right" Width="200">
-                                            <ComboBox ItemsSource="{Binding AvailableKinds}"
-                                                      SelectedItem="{Binding SelectedKind}"
-                                                      IsEnabled="{Binding !IsBusyOrInstalled}"
-                                                      HorizontalAlignment="Stretch" FontSize="12">
-                                                <ComboBox.ItemTemplate>
-                                                    <DataTemplate x:DataType="vm:InstallKindOption">
-                                                        <TextBlock Text="{Binding Label}"/>
-                                                    </DataTemplate>
-                                                </ComboBox.ItemTemplate>
-                                            </ComboBox>
-
-                                            <!-- Install latest -->
-                                            <Button Content="Install latest" HorizontalAlignment="Stretch"
-                                                    HorizontalContentAlignment="Center"
-                                                    Classes="accent"
-                                                    IsVisible="{Binding !IsBusyOrInstalled}"
-                                                    Command="{Binding InstallLatestCommand}"/>
-
-                                            <!-- Installing -->
-                                            <Button Content="Installing… Cancel" HorizontalAlignment="Stretch"
-                                                    HorizontalContentAlignment="Center"
-                                                    IsVisible="{Binding IsInstalling}"
-                                                    Command="{Binding $parent[ItemsControl].((vm:MainWindowViewModel)DataContext).CancelCommand}"/>
-
-                                            <!-- Installed -->
-                                            <TextBlock Text="✓ Installed" HorizontalAlignment="Right"
-                                                       FontWeight="SemiBold" Foreground="#16A34A"
-                                                       IsVisible="{Binding IsInstalled}"/>
-                                        </StackPanel>
-                                    </Grid>
-
-                                    <!-- All versions -->
-                                    <Expander Header="All versions" HorizontalAlignment="Stretch"
-                                              IsExpanded="{Binding IsExpanded}">
-                                        <StackPanel Spacing="6">
-                                            <ProgressBar IsIndeterminate="True" Height="4"
-                                                         IsVisible="{Binding IsLoadingReleases}"/>
-                                            <TextBlock Text="{Binding ReleasesError}" Foreground="#DC2626"
-                                                       TextWrapping="Wrap"
-                                                       IsVisible="{Binding ReleasesError, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
-
-                                            <ItemsControl ItemsSource="{Binding Releases}">
-                                                <ItemsControl.ItemTemplate>
-                                                    <DataTemplate x:DataType="vm:DotnetReleaseViewModel">
-                                                        <Border Padding="0,8" BorderThickness="0,0,0,1"
-                                                                BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}">
-                                                            <Grid ColumnDefinitions="Auto,*,Auto" VerticalAlignment="Center">
-                                                                <StackPanel Grid.Column="0" Width="110" VerticalAlignment="Center">
-                                                                    <TextBlock Text="{Binding ReleaseVersion}" FontWeight="SemiBold"/>
-                                                                    <TextBlock Text="{Binding ReleaseDate}" FontSize="11"
-                                                                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                                                                </StackPanel>
-
-                                                                <TextBlock Grid.Column="1" Text="{Binding CveText}"
-                                                                           VerticalAlignment="Center" FontSize="12"
-                                                                           Foreground="#B45309"
-                                                                           IsVisible="{Binding IsSecurity}"/>
-
-                                                                <WrapPanel Grid.Column="2" Orientation="Horizontal"
-                                                                           HorizontalAlignment="Right">
-                                                                    <Button Content="{Binding SdkButtonText}" Margin="4"
-                                                                            FontSize="11" IsVisible="{Binding HasSdk}"
-                                                                            IsEnabled="{Binding !IsBusyOrInstalled}"
-                                                                            Command="{Binding InstallKindCommand}"
-                                                                            CommandParameter="{x:Static services:InstallKind.Sdk}"/>
-                                                                    <Button Content="{Binding RuntimeButtonText}" Margin="4"
-                                                                            FontSize="11" IsVisible="{Binding HasRuntime}"
-                                                                            IsEnabled="{Binding !IsBusyOrInstalled}"
-                                                                            Command="{Binding InstallKindCommand}"
-                                                                            CommandParameter="{x:Static services:InstallKind.Runtime}"/>
-                                                                    <Button Content="{Binding AspNetButtonText}" Margin="4"
-                                                                            FontSize="11" IsVisible="{Binding HasAspNet}"
-                                                                            IsEnabled="{Binding !IsBusyOrInstalled}"
-                                                                            Command="{Binding InstallKindCommand}"
-                                                                            CommandParameter="{x:Static services:InstallKind.AspNetCoreRuntime}"/>
-                                                                    <Button Content="{Binding WindowsDesktopButtonText}" Margin="4"
-                                                                            FontSize="11" IsVisible="{Binding HasWindowsDesktop}"
-                                                                            IsEnabled="{Binding !IsBusyOrInstalled}"
-                                                                            Command="{Binding InstallKindCommand}"
-                                                                            CommandParameter="{x:Static services:InstallKind.WindowsDesktopRuntime}"/>
-                                                                    <TextBlock Text="✓" Foreground="#16A34A" Margin="4"
-                                                                               VerticalAlignment="Center" FontWeight="Bold"
-                                                                               IsVisible="{Binding IsInstalled}"/>
-                                                                </WrapPanel>
-                                                            </Grid>
-                                                        </Border>
-                                                    </DataTemplate>
-                                                </ItemsControl.ItemTemplate>
-                                            </ItemsControl>
-                                        </StackPanel>
-                                    </Expander>
-                                </StackPanel>
-                            </Border>
-                        </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                    </ScrollViewer>
-
-                    <!-- Loading overlay -->
-                    <Border IsVisible="{Binding IsLoading}" Background="{DynamicResource SystemRegionBrush}" Opacity="0.7">
-                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="12">
-                            <ProgressBar IsIndeterminate="True" Width="200"/>
-                            <TextBlock Text="Loading .NET releases…" HorizontalAlignment="Center"/>
-                        </StackPanel>
-                    </Border>
-                </Panel>
-            </TabItem>
-
-            <!-- Legacy .NET Framework (Windows only) -->
-            <TabItem Header="Legacy" IsVisible="{Binding IsWindows}">
-                <ScrollViewer Padding="20,16">
-                    <StackPanel Spacing="12">
-
-                        <!-- 4.x cumulative line: pick one -->
-                        <Border Classes="card">
-                            <StackPanel Spacing="10">
-                                <TextBlock Text=".NET Framework 4.x — cumulative, install one version"
-                                           FontWeight="SemiBold"/>
-                                <TextBlock FontSize="12" TextWrapping="Wrap"
-                                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                           Text="Higher 4.x versions include the lower ones. Pick the newest you need."/>
-                                <ItemsControl ItemsSource="{Binding Net4Versions}">
+                            <ScrollViewer Grid.Row="1" Padding="0,0,0,12" ClipToBounds="True"
+                                          VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                                <ItemsControl ItemsSource="{Binding Channels}">
                                     <ItemsControl.ItemTemplate>
-                                        <DataTemplate x:DataType="vm:LegacyFrameworkViewModel">
-                                            <RadioButton GroupName="net4" Content="{Binding RadioLabel}"
-                                                         IsChecked="{Binding IsSelected}"/>
+                                        <DataTemplate x:DataType="vm:DotnetChannelViewModel">
+                                            <Border Classes="row">
+                                                <StackPanel>
+
+                                                    <Grid ColumnDefinitions="24,66,128,*,Auto,Auto"
+                                                          Margin="12,0" MinHeight="42" VerticalAlignment="Center">
+
+                                                        <!-- chevron -->
+                                                        <ToggleButton Grid.Column="0" Classes="chevron"
+                                                                      IsChecked="{Binding IsExpanded}">
+                                                            <Path Data="M2,0 L8,6 L2,12 Z" Width="9" Height="11"
+                                                                  Stretch="Uniform"/>
+                                                        </ToggleButton>
+
+                                                        <!-- version -->
+                                                        <TextBlock Grid.Column="1" Text="{Binding ChannelVersion}"
+                                                                   FontSize="15" FontWeight="Bold"
+                                                                   Foreground="{StaticResource Text}"
+                                                                   VerticalAlignment="Center"/>
+
+                                                        <!-- status -->
+                                                        <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6"
+                                                                    VerticalAlignment="Center">
+                                                            <TextBlock Text="●" FontSize="12" VerticalAlignment="Center"
+                                                                       Foreground="{Binding StatusKey, Converter={StaticResource StatusToBrush}}"/>
+                                                            <TextBlock Text="{Binding StatusText}" FontSize="12"
+                                                                       VerticalAlignment="Center"
+                                                                       Foreground="{Binding StatusKey, Converter={StaticResource StatusToBrush}}"/>
+                                                        </StackPanel>
+
+                                                        <!-- latest sdk -->
+                                                        <TextBlock Grid.Column="3" Text="{Binding LatestSdk}"
+                                                                   FontSize="12" Foreground="{StaticResource Muted}"
+                                                                   TextTrimming="CharacterEllipsis" Margin="0,0,12,0"
+                                                                   VerticalAlignment="Center"/>
+
+                                                        <!-- security -->
+                                                        <TextBlock Grid.Column="4" Text="!cve" FontSize="12"
+                                                                   Foreground="{StaticResource Red}" Margin="0,0,12,0"
+                                                                   VerticalAlignment="Center"
+                                                                   IsVisible="{Binding IsSecurity}"
+                                                                   ToolTip.Tip="Security update available"/>
+
+                                                        <!-- actions -->
+                                                        <StackPanel Grid.Column="5" Orientation="Horizontal" Spacing="8"
+                                                                    VerticalAlignment="Center">
+                                                            <ComboBox Classes="kind" Width="120"
+                                                                      ItemsSource="{Binding AvailableKinds}"
+                                                                      SelectedItem="{Binding SelectedKind}"
+                                                                      IsEnabled="{Binding !IsBusyOrInstalled}">
+                                                                <ComboBox.ItemTemplate>
+                                                                    <DataTemplate x:DataType="vm:InstallKindOption">
+                                                                        <TextBlock Text="{Binding Label}"/>
+                                                                    </DataTemplate>
+                                                                </ComboBox.ItemTemplate>
+                                                            </ComboBox>
+
+                                                            <Button Content="install" Classes="term" Width="92"
+                                                                    IsVisible="{Binding !IsBusyOrInstalled}"
+                                                                    Command="{Binding InstallLatestCommand}"/>
+
+                                                            <Button Content="cancel" Classes="termdanger" Width="92"
+                                                                    IsVisible="{Binding IsInstalling}"
+                                                                    Command="{Binding $parent[ItemsControl].((vm:MainWindowViewModel)DataContext).CancelCommand}"/>
+
+                                                            <TextBlock Text="✓ installed" FontSize="12" Width="96"
+                                                                       Foreground="{StaticResource Green}"
+                                                                       VerticalAlignment="Center"
+                                                                       IsVisible="{Binding IsInstalled}"/>
+                                                        </StackPanel>
+                                                    </Grid>
+
+                                                    <!-- expanded releases -->
+                                                    <Border IsVisible="{Binding IsExpanded}"
+                                                            Background="{StaticResource PanelAlt}"
+                                                            BorderBrush="{StaticResource Hairline}" BorderThickness="1"
+                                                            CornerRadius="6" Margin="34,2,12,10" Padding="2">
+                                                        <StackPanel>
+                                                            <ProgressBar IsIndeterminate="True" Height="2" Margin="8,6,8,2"
+                                                                         IsVisible="{Binding IsLoadingReleases}"/>
+                                                            <TextBlock Text="{Binding ReleasesError}"
+                                                                       Foreground="{StaticResource Red}" Margin="10,6" FontSize="12"
+                                                                       TextWrapping="Wrap"
+                                                                       IsVisible="{Binding ReleasesError, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
+
+                                                            <ItemsControl ItemsSource="{Binding Releases}">
+                                                                <ItemsControl.ItemTemplate>
+                                                                    <DataTemplate x:DataType="vm:DotnetReleaseViewModel">
+                                                                        <Border Classes="row" Padding="0">
+                                                                            <Grid ColumnDefinitions="140,*,Auto" Margin="14,0"
+                                                                                  MinHeight="33" VerticalAlignment="Center">
+                                                                                <StackPanel Grid.Column="0" Orientation="Horizontal"
+                                                                                            Spacing="8" VerticalAlignment="Center">
+                                                                                    <TextBlock Text="{Binding ReleaseVersion}"
+                                                                                               FontSize="12" FontWeight="SemiBold"
+                                                                                               Foreground="{StaticResource Text}"
+                                                                                               VerticalAlignment="Center"/>
+                                                                                    <TextBlock Text="{Binding ReleaseDate}"
+                                                                                               FontSize="11" Foreground="{StaticResource Faint}"
+                                                                                               VerticalAlignment="Center"/>
+                                                                                </StackPanel>
+
+                                                                                <TextBlock Grid.Column="1" Text="{Binding CveText}"
+                                                                                           VerticalAlignment="Center" FontSize="11"
+                                                                                           Foreground="{StaticResource Red}"
+                                                                                           TextTrimming="CharacterEllipsis" Margin="8,0"
+                                                                                           IsVisible="{Binding IsSecurity}"/>
+
+                                                                                <StackPanel Grid.Column="2" Orientation="Horizontal"
+                                                                                            HorizontalAlignment="Right" VerticalAlignment="Center">
+                                                                                    <Button Content="{Binding SdkButtonText}" Classes="kindlet"
+                                                                                            IsVisible="{Binding HasSdk}"
+                                                                                            IsEnabled="{Binding !IsBusyOrInstalled}"
+                                                                                            Command="{Binding InstallKindCommand}"
+                                                                                            CommandParameter="{x:Static services:InstallKind.Sdk}"/>
+                                                                                    <Button Content="{Binding RuntimeButtonText}" Classes="kindlet"
+                                                                                            IsVisible="{Binding HasRuntime}"
+                                                                                            IsEnabled="{Binding !IsBusyOrInstalled}"
+                                                                                            Command="{Binding InstallKindCommand}"
+                                                                                            CommandParameter="{x:Static services:InstallKind.Runtime}"/>
+                                                                                    <Button Content="{Binding AspNetButtonText}" Classes="kindlet"
+                                                                                            IsVisible="{Binding HasAspNet}"
+                                                                                            IsEnabled="{Binding !IsBusyOrInstalled}"
+                                                                                            Command="{Binding InstallKindCommand}"
+                                                                                            CommandParameter="{x:Static services:InstallKind.AspNetCoreRuntime}"/>
+                                                                                    <Button Content="{Binding WindowsDesktopButtonText}" Classes="kindlet"
+                                                                                            IsVisible="{Binding HasWindowsDesktop}"
+                                                                                            IsEnabled="{Binding !IsBusyOrInstalled}"
+                                                                                            Command="{Binding InstallKindCommand}"
+                                                                                            CommandParameter="{x:Static services:InstallKind.WindowsDesktopRuntime}"/>
+                                                                                    <TextBlock Text="✓" Foreground="{StaticResource Green}" Margin="6,0,0,0"
+                                                                                               VerticalAlignment="Center" FontWeight="Bold"
+                                                                                               IsVisible="{Binding IsInstalled}"/>
+                                                                                </StackPanel>
+                                                                            </Grid>
+                                                                        </Border>
+                                                                    </DataTemplate>
+                                                                </ItemsControl.ItemTemplate>
+                                                            </ItemsControl>
+                                                        </StackPanel>
+                                                    </Border>
+                                                </StackPanel>
+                                            </Border>
                                         </DataTemplate>
                                     </ItemsControl.ItemTemplate>
                                 </ItemsControl>
-                                <Button Content="Install selected 4.x" Classes="accent"
-                                        HorizontalAlignment="Left"
-                                        IsEnabled="{Binding !IsInstalling}"
-                                        Command="{Binding InstallNet4Command}"/>
+                            </ScrollViewer>
+                        </Grid>
+
+                        <!-- loading overlay -->
+                        <Border IsVisible="{Binding IsLoading}" Background="#D00A0E14">
+                            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="10">
+                                <TextBlock HorizontalAlignment="Center" FontSize="13" Foreground="{StaticResource Green}">
+                                    <Run Text="❯"/>
+                                    <Run Text="fetching release metadata"/>
+                                    <Run Text="▋" Foreground="{StaticResource Green}"/>
+                                </TextBlock>
+                                <ProgressBar IsIndeterminate="True" Width="220" Foreground="{StaticResource Green}"/>
                             </StackPanel>
                         </Border>
+                    </Panel>
+                </TabItem>
 
-                        <!-- Stand-alone legacy versions -->
-                        <ItemsControl ItemsSource="{Binding OtherLegacyVersions}">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate x:DataType="vm:LegacyFrameworkViewModel">
-                                    <Border Classes="card">
-                                        <Grid ColumnDefinitions="*,Auto" VerticalAlignment="Center">
-                                            <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
-                                                <TextBlock Text="{Binding Title}" FontWeight="SemiBold"/>
-                                                <TextBlock Text="{Binding InstallTypeText}" FontSize="12"
-                                                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                                            </StackPanel>
-                                            <StackPanel Grid.Column="1" Width="140" VerticalAlignment="Center">
-                                                <Button Content="Install" Classes="accent"
-                                                        HorizontalAlignment="Stretch"
-                                                        HorizontalContentAlignment="Center"
-                                                        IsVisible="{Binding !IsBusyOrInstalled}"
-                                                        Command="{Binding InstallCommand}"/>
-                                                <TextBlock Text="Installing…" HorizontalAlignment="Right"
-                                                           IsVisible="{Binding IsInstalling}"/>
-                                                <TextBlock Text="✓ Installed" HorizontalAlignment="Right"
-                                                           FontWeight="SemiBold" Foreground="#16A34A"
-                                                           IsVisible="{Binding IsInstalled}"/>
-                                            </StackPanel>
-                                        </Grid>
-                                    </Border>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                    </StackPanel>
-                </ScrollViewer>
-            </TabItem>
+                <!-- ===================== Legacy .NET Framework ===================== -->
+                <TabItem Header="legacy" IsVisible="{Binding IsWindows}">
+                    <ScrollViewer Padding="12,10,12,14" ClipToBounds="True"
+                                  VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                        <StackPanel Spacing="12">
 
-        </TabControl>
-    </DockPanel>
+                            <Border Classes="panel" Background="{StaticResource PanelAlt}" Padding="14,12">
+                                <StackPanel Spacing="10">
+                                    <TextBlock Text=".NET Framework 4.x — cumulative" FontSize="13"
+                                               Foreground="{StaticResource Text}"/>
+                                    <TextBlock FontSize="12" TextWrapping="Wrap" Foreground="{StaticResource Muted}"
+                                               Text="Higher 4.x versions include the lower ones. Pick the newest you need."/>
+                                    <ItemsControl ItemsSource="{Binding Net4Versions}">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <WrapPanel Orientation="Horizontal"/>
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate x:DataType="vm:LegacyFrameworkViewModel">
+                                                <RadioButton GroupName="net4" Content="{Binding RadioLabel}"
+                                                             Width="210" Margin="0,2" FontSize="12"
+                                                             IsChecked="{Binding IsSelected}"/>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                    <Button Content="install selected 4.x" Classes="term"
+                                            HorizontalAlignment="Left"
+                                            IsEnabled="{Binding !IsInstalling}"
+                                            Command="{Binding InstallNet4Command}"/>
+                                </StackPanel>
+                            </Border>
+
+                            <Border Classes="panel" Background="{StaticResource PanelAlt}">
+                                <ItemsControl ItemsSource="{Binding OtherLegacyVersions}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="vm:LegacyFrameworkViewModel">
+                                            <Border Classes="row">
+                                                <Grid ColumnDefinitions="*,Auto" Margin="14,0" MinHeight="46"
+                                                      VerticalAlignment="Center">
+                                                    <StackPanel Grid.Column="0" Spacing="1" VerticalAlignment="Center">
+                                                        <TextBlock Text="{Binding Title}" FontWeight="SemiBold" FontSize="13"
+                                                                   Foreground="{StaticResource Text}"/>
+                                                        <TextBlock Text="{Binding InstallTypeText}" FontSize="11"
+                                                                   Foreground="{StaticResource Faint}"/>
+                                                    </StackPanel>
+                                                    <Button Grid.Column="1" Content="install" Classes="term" Width="100"
+                                                            IsVisible="{Binding !IsBusyOrInstalled}"
+                                                            Command="{Binding InstallCommand}"/>
+                                                    <TextBlock Grid.Column="1" Text="installing…" Foreground="{StaticResource Muted}"
+                                                               FontSize="12" VerticalAlignment="Center" HorizontalAlignment="Right"
+                                                               IsVisible="{Binding IsInstalling}"/>
+                                                    <TextBlock Grid.Column="1" Text="✓ installed" Foreground="{StaticResource Green}"
+                                                               FontSize="12" VerticalAlignment="Center" HorizontalAlignment="Right"
+                                                               IsVisible="{Binding IsInstalled}"/>
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </Border>
+                        </StackPanel>
+                    </ScrollViewer>
+                </TabItem>
+
+            </TabControl>
+        </Border>
+
+        <!-- ============================ Console ============================ -->
+        <Border Grid.Row="2" Classes="panel" Background="{StaticResource PanelAlt}" Margin="0,10,0,0" Padding="0">
+            <StackPanel>
+                <Grid ColumnDefinitions="Auto,*,Auto" Margin="14,8,10,6">
+                    <TextBlock Grid.Column="0" Text="console" VerticalAlignment="Center" FontSize="11"
+                               Foreground="{StaticResource Muted}"/>
+                    <ProgressBar Grid.Column="1" Width="120" IsIndeterminate="True" Margin="14,0"
+                                 HorizontalAlignment="Left" Foreground="{StaticResource Green}"
+                                 IsVisible="{Binding IsInstalling}" VerticalAlignment="Center"/>
+                    <Button Grid.Column="2" Content="clear" Classes="termghost" FontSize="11" Padding="10,2"
+                            Command="{Binding ClearLogCommand}" VerticalAlignment="Center"/>
+                </Grid>
+
+                <Border BorderBrush="{StaticResource Hairline}" BorderThickness="0,1,0,0">
+                    <TextBox Text="{Binding InstallLog, Mode=OneWay}" IsReadOnly="True"
+                             Height="100" Background="Transparent" BorderThickness="0" Padding="14,8"
+                             Foreground="#A9B7C8"
+                             FontFamily="{StaticResource MonoFont}" FontSize="12"
+                             AcceptsReturn="True" TextWrapping="NoWrap"
+                             VerticalContentAlignment="Top"
+                             ScrollViewer.VerticalScrollBarVisibility="Auto"
+                             ScrollViewer.HorizontalScrollBarVisibility="Auto"/>
+                </Border>
+            </StackPanel>
+        </Border>
+    </Grid>
 </Window>

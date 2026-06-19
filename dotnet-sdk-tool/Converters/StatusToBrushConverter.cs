@@ -12,11 +12,11 @@ public class StatusToBrushConverter : IValueConverter
 {
     public static readonly StatusToBrushConverter Instance = new();
 
-    private static readonly SolidColorBrush Active = new(Color.Parse("#16A34A"));      // green
-    private static readonly SolidColorBrush Maintenance = new(Color.Parse("#D97706"));  // amber
-    private static readonly SolidColorBrush Preview = new(Color.Parse("#2563EB"));      // blue
-    private static readonly SolidColorBrush Eol = new(Color.Parse("#6B7280"));          // gray
-    private static readonly SolidColorBrush Unknown = new(Color.Parse("#6B7280"));
+    private static readonly SolidColorBrush Active = new(Color.Parse("#22C55E"));       // green
+    private static readonly SolidColorBrush Maintenance = new(Color.Parse("#F59E0B"));  // amber
+    private static readonly SolidColorBrush Preview = new(Color.Parse("#3B82F6"));      // blue
+    private static readonly SolidColorBrush Eol = new(Color.Parse("#64748B"));          // slate
+    private static readonly SolidColorBrush Unknown = new(Color.Parse("#64748B"));
 
     public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
