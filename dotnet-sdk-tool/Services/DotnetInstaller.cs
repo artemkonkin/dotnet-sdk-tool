@@ -18,6 +18,7 @@ public enum InstallKind
     Sdk,
     Runtime,
     AspNetCoreRuntime,
+    WindowsDesktopRuntime,
 }
 
 /// <summary>

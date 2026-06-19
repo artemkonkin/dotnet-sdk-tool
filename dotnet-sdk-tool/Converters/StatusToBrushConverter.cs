@@ -20,7 +20,7 @@ public class StatusToBrushConverter : IValueConverter
 
     public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
-        return value as string switch
+        return value switch
         {
             "active" => Active,
             "maintenance" => Maintenance,

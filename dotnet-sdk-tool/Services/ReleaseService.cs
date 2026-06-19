@@ -45,8 +45,31 @@ public class ReleaseService
             .ToList();
     }
 
-    private static Version ParseVersion(string channelVersion)
+    /// <summary>
+    /// Downloads the per-channel <c>releases.json</c> and returns every release in the
+    /// channel, newest version first.
+    /// </summary>
+    public async Task<IReadOnlyList<Releases>> GetChannelReleasesAsync(
+        string releasesJsonUrl, CancellationToken cancellationToken = default)
     {
-        return Version.TryParse(channelVersion, out var version) ? version : new Version(0, 0);
+        if (string.IsNullOrWhiteSpace(releasesJsonUrl))
+            return Array.Empty<Releases>();
+
+        await using var stream = await _httpClient.GetStreamAsync(releasesJsonUrl, cancellationToken);
+        var metadata = await JsonSerializer.DeserializeAsync<ReleaseMetadataDto>(stream, JsonOptions, cancellationToken);
+
+        var releases = metadata?.releases ?? Array.Empty<Releases>();
+
+        return releases
+            .Where(r => !string.IsNullOrWhiteSpace(r.release_version))
+            .OrderByDescending(r => ParseVersion(r.release_version))
+            .ToList();
+    }
+
+    private static Version ParseVersion(string version)
+    {
+        // Strip any pre-release suffix (e.g. "10.0.0-preview.5") before comparing.
+        var core = version.Split('-', 2)[0];
+        return Version.TryParse(core, out var parsed) ? parsed : new Version(0, 0);
     }
 }

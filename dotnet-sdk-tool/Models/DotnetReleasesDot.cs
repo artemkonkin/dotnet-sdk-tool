@@ -64,131 +64,144 @@ public class Signature
 /// </summary>
 public class ReleaseMetadataDto
 {
+    [JsonPropertyName("channel-version")]
     public string channel_version { get; set; }
+
+    [JsonPropertyName("latest-release")]
     public string latest_release { get; set; }
+
+    [JsonPropertyName("latest-release-date")]
     public string latest_release_date { get; set; }
+
+    [JsonPropertyName("latest-runtime")]
     public string latest_runtime { get; set; }
+
+    [JsonPropertyName("latest-sdk")]
     public string latest_sdk { get; set; }
+
+    [JsonPropertyName("support-phase")]
     public string support_phase { get; set; }
+
+    [JsonPropertyName("release-type")]
     public string release_type { get; set; }
+
+    [JsonPropertyName("eol-date")]
     public string eol_date { get; set; }
+
+    [JsonPropertyName("lifecycle-policy")]
     public string lifecycle_policy { get; set; }
+
+    [JsonPropertyName("releases")]
     public Releases[] releases { get; set; }
+
+    [JsonPropertyName("signature")]
     public Signature signature { get; set; }
 }
 
 public class Releases
 {
+    [JsonPropertyName("release-date")]
     public string release_date { get; set; }
+
+    [JsonPropertyName("release-version")]
     public string release_version { get; set; }
+
+    [JsonPropertyName("security")]
     public bool security { get; set; }
+
+    [JsonPropertyName("cve-list")]
     public Cve_list[] cve_list { get; set; }
+
+    [JsonPropertyName("release-notes")]
     public string release_notes { get; set; }
+
+    [JsonPropertyName("runtime")]
     public Runtime runtime { get; set; }
+
+    [JsonPropertyName("sdk")]
     public Sdk sdk { get; set; }
-    public Sdks[] sdks { get; set; }
+
+    [JsonPropertyName("sdks")]
+    public Sdk[] sdks { get; set; }
+
+    [JsonPropertyName("aspnetcore-runtime")]
     public Aspnetcore_runtime aspnetcore_runtime { get; set; }
+
+    [JsonPropertyName("windowsdesktop")]
     public Windowsdesktop windowsdesktop { get; set; }
 }
 
 public class Cve_list
 {
+    [JsonPropertyName("cve-id")]
     public string cve_id { get; set; }
+
+    [JsonPropertyName("cve-url")]
     public string cve_url { get; set; }
 }
 
 public class Runtime
 {
+    [JsonPropertyName("version")]
     public string version { get; set; }
+
+    [JsonPropertyName("version-display")]
     public string version_display { get; set; }
-    public string vs_version { get; set; }
-    public string vs_mac_version { get; set; }
+
+    [JsonPropertyName("files")]
+    public Files[] files { get; set; }
+}
+
+public class Sdk
+{
+    [JsonPropertyName("version")]
+    public string version { get; set; }
+
+    [JsonPropertyName("version-display")]
+    public string version_display { get; set; }
+
+    [JsonPropertyName("runtime-version")]
+    public string runtime_version { get; set; }
+
+    [JsonPropertyName("files")]
+    public Files[] files { get; set; }
+}
+
+public class Aspnetcore_runtime
+{
+    [JsonPropertyName("version")]
+    public string version { get; set; }
+
+    [JsonPropertyName("version-display")]
+    public string version_display { get; set; }
+
+    [JsonPropertyName("files")]
+    public Files[] files { get; set; }
+}
+
+public class Windowsdesktop
+{
+    [JsonPropertyName("version")]
+    public string version { get; set; }
+
+    [JsonPropertyName("version-display")]
+    public string version_display { get; set; }
+
+    [JsonPropertyName("files")]
     public Files[] files { get; set; }
 }
 
 public class Files
 {
+    [JsonPropertyName("name")]
     public string name { get; set; }
+
+    [JsonPropertyName("rid")]
     public string rid { get; set; }
+
+    [JsonPropertyName("url")]
     public string url { get; set; }
-    public string hash { get; set; }
-}
 
-public class Sdk
-{
-    public string version { get; set; }
-    public string version_display { get; set; }
-    public string runtime_version { get; set; }
-    public string vs_version { get; set; }
-    public string vs_mac_version { get; set; }
-    public string vs_support { get; set; }
-    public string vs_mac_support { get; set; }
-    public string csharp_version { get; set; }
-    public string fsharp_version { get; set; }
-    public string vb_version { get; set; }
-    public Files1[] files { get; set; }
-}
-
-public class Files1
-{
-    public string name { get; set; }
-    public string rid { get; set; }
-    public string url { get; set; }
-    public string hash { get; set; }
-}
-
-public class Sdks
-{
-    public string version { get; set; }
-    public string version_display { get; set; }
-    public string runtime_version { get; set; }
-    public string vs_version { get; set; }
-    public string vs_mac_version { get; set; }
-    public string vs_support { get; set; }
-    public string vs_mac_support { get; set; }
-    public string csharp_version { get; set; }
-    public string fsharp_version { get; set; }
-    public string vb_version { get; set; }
-    public Files2[] files { get; set; }
-}
-
-public class Files2
-{
-    public string name { get; set; }
-    public string rid { get; set; }
-    public string url { get; set; }
-    public string hash { get; set; }
-}
-
-public class Aspnetcore_runtime
-{
-    public string version { get; set; }
-    public string version_display { get; set; }
-    public string[] version_aspnetcoremodule { get; set; }
-    public string vs_version { get; set; }
-    public Files3[] files { get; set; }
-}
-
-public class Files3
-{
-    public string name { get; set; }
-    public string rid { get; set; }
-    public string url { get; set; }
-    public string hash { get; set; }
-    public string akams { get; set; }
-}
-
-public class Windowsdesktop
-{
-    public string version { get; set; }
-    public string version_display { get; set; }
-    public Files4[] files { get; set; }
-}
-
-public class Files4
-{
-    public string name { get; set; }
-    public string rid { get; set; }
-    public string url { get; set; }
+    [JsonPropertyName("hash")]
     public string hash { get; set; }
 }
