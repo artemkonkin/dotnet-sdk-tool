@@ -1,27 +1,55 @@
-﻿namespace dotnet_sdk_tool_template.Models;
+﻿using System.Text.Json.Serialization;
+
+namespace dotnet_sdk_tool_template.Models;
 
 /// <summary>
-/// https://dotnetcli.azureedge.net/dotnet/release-metadata/releases-index.json
+/// https://builds.dotnet.microsoft.com/dotnet/release-metadata/releases-index.json
 /// </summary>
 public class DotnetReleasesDot
 {
+    [JsonPropertyName("releases-index")]
     public Releases_index[] releases_index { get; set; }
+
+    [JsonPropertyName("signature")]
     public Signature signature { get; set; }
 }
 
 public class Releases_index
 {
+    [JsonPropertyName("channel-version")]
     public string channel_version { get; set; }
+
+    [JsonPropertyName("latest-release")]
     public string latest_release { get; set; }
+
+    [JsonPropertyName("latest-release-date")]
     public string latest_release_date { get; set; }
+
+    [JsonPropertyName("security")]
     public bool security { get; set; }
+
+    [JsonPropertyName("latest-runtime")]
     public string latest_runtime { get; set; }
+
+    [JsonPropertyName("latest-sdk")]
     public string latest_sdk { get; set; }
+
+    [JsonPropertyName("product")]
     public string product { get; set; }
+
+    [JsonPropertyName("support-phase")]
     public string support_phase { get; set; }
+
+    [JsonPropertyName("release-type")]
     public string release_type { get; set; }
+
+    [JsonPropertyName("releases.json")]
     public string releases_json { get; set; }
+
+    [JsonPropertyName("supported-os.json")]
     public string supported_os_json { get; set; }
+
+    [JsonPropertyName("eol-date")]
     public string eol_date { get; set; }
 }
 

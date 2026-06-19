@@ -3,18 +3,149 @@
         xmlns:vm="using:dotnet_sdk_tool_template.ViewModels"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        mc:Ignorable="d" d:DesignWidth="960" d:DesignHeight="640"
         x:Class="dotnet_sdk_tool_template.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
+        Width="960" Height="660" MinWidth="720" MinHeight="520"
         Icon="/Assets/avalonia-logo.ico"
-        Title="dotnet_sdk_tool_template">
+        Title=".NET SDK Installer">
 
     <Design.DataContext>
-        <!-- This only sets the DataContext for the previewer in an IDE,
-             to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
         <vm:MainWindowViewModel/>
     </Design.DataContext>
 
-    <TextBlock Text="{Binding Greeting}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+    <DockPanel LastChildFill="True">
 
+        <!-- Header -->
+        <Border DockPanel.Dock="Top" Padding="20,16" Background="{DynamicResource LayerFillColorDefaultBrush}"
+                BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}" BorderThickness="0,0,0,1">
+            <Grid ColumnDefinitions="Auto,*,Auto,Auto" VerticalAlignment="Center">
+                <Border Grid.Column="0" Width="44" Height="44" CornerRadius="10" Margin="0,0,14,0"
+                        Background="{DynamicResource AccentFillColorDefaultBrush}">
+                    <TextBlock Text=".N" FontSize="18" FontWeight="Bold" Foreground="White"
+                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                </Border>
+
+                <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="1">
+                    <TextBlock Text=".NET SDK Installer" FontSize="20" FontWeight="SemiBold"/>
+                    <TextBlock Text="{Binding PlatformDescription, StringFormat='Install any supported .NET — {0}'}"
+                               FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                </StackPanel>
+
+                <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center"
+                            Margin="0,0,12,0">
+                    <TextBlock Text="Show legacy" VerticalAlignment="Center" FontSize="12"
+                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                    <ToggleSwitch IsChecked="{Binding ShowLegacy}" OnContent="" OffContent=""/>
+                </StackPanel>
+
+                <Button Grid.Column="3" Content="Refresh" Command="{Binding LoadCommand}"
+                        IsEnabled="{Binding !IsLoading}" VerticalAlignment="Center"/>
+            </Grid>
+        </Border>
+
+        <!-- Status / log panel -->
+        <Border DockPanel.Dock="Bottom" Padding="20,10"
+                BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}" BorderThickness="0,1,0,0">
+            <StackPanel Spacing="8">
+                <Grid ColumnDefinitions="*,Auto">
+                    <TextBlock Grid.Column="0" Text="{Binding StatusMessage}" VerticalAlignment="Center"
+                               TextTrimming="CharacterEllipsis"
+                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                    <ProgressBar Grid.Column="1" Width="160" IsIndeterminate="True"
+                                 IsVisible="{Binding IsInstalling}" VerticalAlignment="Center"/>
+                </Grid>
+
+                <Expander Header="Installation log" HorizontalAlignment="Stretch">
+                    <Grid RowDefinitions="*,Auto" Height="180">
+                        <TextBox Grid.Row="0" Text="{Binding InstallLog, Mode=OneWay}" IsReadOnly="True"
+                                 FontFamily="Cascadia Mono,Consolas,Menlo,monospace" FontSize="12"
+                                 AcceptsReturn="True" TextWrapping="NoWrap"
+                                 VerticalContentAlignment="Top"
+                                 ScrollViewer.VerticalScrollBarVisibility="Auto"
+                                 ScrollViewer.HorizontalScrollBarVisibility="Auto"/>
+                        <Button Grid.Row="1" Content="Clear log" Command="{Binding ClearLogCommand}"
+                                HorizontalAlignment="Right" Margin="0,8,0,0"/>
+                    </Grid>
+                </Expander>
+            </StackPanel>
+        </Border>
+
+        <!-- Channel list -->
+        <Panel>
+            <ScrollViewer Padding="20,16">
+                <ItemsControl ItemsSource="{Binding Channels}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="vm:DotnetChannelViewModel">
+                            <Border Classes="card">
+                                <Grid ColumnDefinitions="Auto,*,Auto" VerticalAlignment="Center">
+
+                                    <!-- Version block -->
+                                    <StackPanel Grid.Column="0" Width="92" VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding ChannelVersion}" FontSize="26" FontWeight="Bold"/>
+                                        <TextBlock Text=".NET" FontSize="11"
+                                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                    </StackPanel>
+
+                                    <!-- Details -->
+                                    <StackPanel Grid.Column="1" Spacing="6" VerticalAlignment="Center">
+                                        <StackPanel Orientation="Horizontal" Spacing="8">
+                                            <Border Classes="typePill" IsVisible="{Binding ReleaseType, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                                                <TextBlock Text="{Binding ReleaseType}"/>
+                                            </Border>
+                                            <Border Classes="pill" Background="{Binding StatusKey, Converter={StaticResource StatusToBrush}}">
+                                                <TextBlock Text="{Binding StatusText}"/>
+                                            </Border>
+                                            <Border Classes="typePill" IsVisible="{Binding IsSecurity}">
+                                                <TextBlock Text="🛡 Security update"/>
+                                            </Border>
+                                        </StackPanel>
+                                        <TextBlock FontSize="13"
+                                                   Text="{Binding LatestSdk, StringFormat='Latest SDK: {0}'}"/>
+                                        <TextBlock FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                                   Text="{Binding EolText}"/>
+                                    </StackPanel>
+
+                                    <!-- Actions -->
+                                    <StackPanel Grid.Column="2" Spacing="8" VerticalAlignment="Center"
+                                                HorizontalAlignment="Right" Width="150">
+                                        <CheckBox Content="Runtime only" IsChecked="{Binding RuntimeOnly}"
+                                                  IsEnabled="{Binding !IsBusyOrInstalled}" FontSize="12"
+                                                  HorizontalAlignment="Right"/>
+
+                                        <!-- Install -->
+                                        <Button Content="Install" HorizontalAlignment="Stretch"
+                                                HorizontalContentAlignment="Center"
+                                                Classes="accent"
+                                                IsVisible="{Binding !IsBusyOrInstalled}"
+                                                Command="{Binding $parent[ItemsControl].((vm:MainWindowViewModel)DataContext).InstallCommand}"
+                                                CommandParameter="{Binding}"/>
+
+                                        <!-- Installing -->
+                                        <Button Content="Installing… Cancel" HorizontalAlignment="Stretch"
+                                                HorizontalContentAlignment="Center"
+                                                IsVisible="{Binding IsInstalling}"
+                                                Command="{Binding $parent[ItemsControl].((vm:MainWindowViewModel)DataContext).CancelCommand}"/>
+
+                                        <!-- Installed -->
+                                        <TextBlock Text="✓ Installed" HorizontalAlignment="Right"
+                                                   FontWeight="SemiBold" Foreground="#16A34A"
+                                                   IsVisible="{Binding IsInstalled}"/>
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+
+            <!-- Loading overlay -->
+            <Border IsVisible="{Binding IsLoading}" Background="{DynamicResource SystemRegionBrush}" Opacity="0.7">
+                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="12">
+                    <ProgressBar IsIndeterminate="True" Width="200"/>
+                    <TextBlock Text="Loading .NET releases…" HorizontalAlignment="Center"/>
+                </StackPanel>
+            </Border>
+        </Panel>
+    </DockPanel>
 </Window>
